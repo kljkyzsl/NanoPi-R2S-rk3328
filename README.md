@@ -14,7 +14,7 @@
 
 ### 默认编译  
 
-- 用户名：root 密码：password  管理IP：192.168.11.1
+- 用户名：root 密码：password  管理IP：192.168.0.1
 - 下载地址： https://github.com/DHDAXCW/NanoPi-R2S-rk3328/releases
 ### - Docker：正式版带docker，有超频，带有docker插件。（对passwall的udp要求很高，不要刷docker版本）
 - 电报群：https://t.me/DHDAXCW
