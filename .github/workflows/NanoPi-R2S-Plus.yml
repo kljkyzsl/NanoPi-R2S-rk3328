@@ -27,10 +27,11 @@ env:
 
 jobs:
   Build:
-    runs-on: self-hosted
-    if: github.repository == 'DHDAXCW/NanoPi-R2S-rk3328'
+    runs-on: ubuntu-22.04
+    if: github.repository == 'kljkyzsl/NanoPi-R2S-rk3328'
     outputs:
       OPENWRTROOT: ${{ steps.update.outputs.OPENWRTROOT }}
+      BINDIR: ${{ steps.compile.outputs.BINDIR }}
       PLATFORM: ${{ steps.compile.outputs.PLATFORM }}
       TARGET: ${{ steps.compile.outputs.TARGET }}
       SUBTARGET: ${{ steps.compile.outputs.SUBTARGET }}
@@ -99,12 +100,16 @@ jobs:
       run: |
         cd $OPENWRTROOT
         echo -e "$(nproc) thread compile"
-        make tools/compile -j$(nproc) || make tools/compile -j72
-        make toolchain/compile -j$(nproc) || make toolchain/compile -j72
-        make target/compile -j$(nproc) || make target/compile -j72 IGNORE_ERRORS=1
+        make tools/compile -j$(nproc) || make tools/compile -j8
+        make toolchain/compile -j$(nproc) || make toolchain/compile -j8
+        make target/compile -j$(nproc) || make target/compile -j8 IGNORE_ERRORS=1
         make diffconfig
-        make package/compile -j$(nproc) IGNORE_ERRORS=1 || make package/compile -j72 IGNORE_ERRORS=1
+        make package/compile -j$(nproc) IGNORE_ERRORS=1 || make package/compile -j8 IGNORE_ERRORS=1
         make package/index
+        cd $OPENWRTROOT/bin
+        BINDIR=$(basename `pwd`)
+        echo "BINDIR=$BINDIR" >> $GITHUB_ENV
+        echo "::set-output name=BINDIR::$(echo $BINDIR)"
         cd $OPENWRTROOT/bin/packages/*
         PLATFORM=$(basename `pwd`)
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
@@ -172,7 +177,7 @@ jobs:
           name: ${{ steps.tag.outputs.release_date }} NanoPi-R2S-linux-5.4_正式版_全插件
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
-          files: ${{ env.FIRMWARE }}/*
+          files: ${{ env.BINDIR }}/*
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
