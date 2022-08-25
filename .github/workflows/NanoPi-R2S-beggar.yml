@@ -96,7 +96,7 @@ jobs:
         make package/compile -j$(nproc) IGNORE_ERRORS=1 || make package/compile -j8 IGNORE_ERRORS=1
         make package/index
         cd $OPENWRTROOT/bin
-        BINDIR=$(basename `pwd`)
+        BINDIR=$PWD
         echo "BINDIR=$BINDIR" >> $GITHUB_ENV
         echo "::set-output name=BINDIR::$(echo $BINDIR)"
         cd $OPENWRTROOT/bin/packages/*
