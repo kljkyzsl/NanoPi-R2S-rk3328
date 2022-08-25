@@ -31,7 +31,7 @@ jobs:
     if: github.repository == 'kljkyzsl/NanoPi-R2S-rk3328'
     outputs:
       OPENWRTROOT: ${{ steps.update.outputs.OPENWRTROOT }}
-      BINDIR: ${{ steps.compile.outputs.BINDIR }}
+      PACKAGES: ${{ steps.generate.outputs.PACKAGES }}
       PLATFORM: ${{ steps.compile.outputs.PLATFORM }}
       TARGET: ${{ steps.compile.outputs.TARGET }}
       SUBTARGET: ${{ steps.compile.outputs.SUBTARGET }}
@@ -107,10 +107,6 @@ jobs:
         make diffconfig
         make package/compile -j$(nproc) IGNORE_ERRORS=1 || make package/compile -j8 IGNORE_ERRORS=1
         make package/index
-        cd $OPENWRTROOT/bin
-        BINDIR=$PWD
-        echo "BINDIR=$BINDIR" >> $GITHUB_ENV
-        echo "::set-output name=BINDIR::$(echo $BINDIR)"
         cd $OPENWRTROOT/bin/packages/*
         PLATFORM=$(basename `pwd`)
         echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
@@ -158,6 +154,11 @@ jobs:
         rm -rf bin/targets/rockchip/armv8/config.buildinfo
         rm -rf bin/targets/rockchip/armv8/packages-server.zip
         make checksum
+        cd $OPENWRTROOT/bin/
+        tar -cvzf packages.tar.gz packages
+        PACKAGES=$PWD/packages.tar.gz
+        echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+        echo "::set-output name=PACKAGES::$(echo $PACKAGES)"
         echo "::set-output name=GENERATE_STATUS::success"
     - name: Generate release tag
       id: tag
@@ -178,7 +179,9 @@ jobs:
           name: ${{ steps.tag.outputs.release_date }} NanoPi-R2S-linux.5.4_乞丐版
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
-          files: ${{ env.BINDIR }}/*
+          files: |
+            ${{ env.PACKAGES }}
+            ${{ env.FIRMWARE }}/*
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
